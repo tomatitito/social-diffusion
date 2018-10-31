@@ -1,13 +1,12 @@
 (ns diffusion.core
   (:require [loom.graph :as g]
-            [loom.attr :as a]
             [loom.io :as io]
-            [loom.gen :as gen]
             [oz.core :as oz]
             [ministrants.core :as m]
             [anglican.core :refer [doquery]]
             [diffusion.model :refer [diffusion-query initialize-graph]]
-            [diffusion.io :as dio])
+            [diffusion.io :as dio]
+            [diffusion.gen :refer :all])
   (:gen-class))
 
 
