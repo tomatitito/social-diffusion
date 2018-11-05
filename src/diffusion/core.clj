@@ -10,62 +10,57 @@
             [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
-
-;(def g
-;  (-> path
-;      (create-graph-from-snap-edge-list )
-;      (initialize-graph 0.01)))
-;
-;(def g2
-;  (->
-;    (gen-newman-watts (g/graph) 1000 10 0.3)
-;    (initialize-graph 0.1)))
-;
-(def g3
-  (->
-    (gen-newman-watts (g/graph) 10 2 0.1)
-    (initialize-graph 0.1)))
-
-(def gn (gen-newman-watts (g/graph) 100 3 0.3))
-(io/dot gn "testgraph.dot")
-
-(def samples (doall (take 1000 (doquery :smc diffusion-query [g3] :number-of-particles 10))))
-;(first samples)
-;(count (g/nodes g))
-
-(dio/write-seasons! samples #(m/from-result % [:history :n-green]) "ngreen2.csv")
-
 (def cli-opts
   [["-g" "--graph-type graph-type" "Type of graph used in simulation"
     :default "newman-watts"]
-   ["-d" "--degree degree" "(Out-)Degree for nodes in graph"]
+   ["-d" "--degree degree" "(Out-)Degree for nodes in graph"
+    :default 5]
    ["-h" "--phi phi" "Parameter for adding edges to Newman-Watts graph"
     :parse-fn #(Float/parseFloat %)
     :default 0.3
     :validate [#(<= 0.0 % 1.0) "Parameter for adding edges to Newman-Watts graph has to be between 0 and 1"]]
    ["-n" "--n-samples n-samples" "Number of simulations run"
-    :default 100]
+    :default 100
+    :parse-fn #(Integer/parseInt %)]
    ["-N" "--n-nodes n-nodes" "Number of nodes in graph"
-    :default 50]
+    :default 50
+    :parse-fn #(Integer/parseInt %)]
    ["-a" "--algorithm algorithm" "Algortithm used for sampling from model"
     :default :smc
     :parse-fn #(keyword %)]
    ["-o" "--outfile"
     :required "Path to write results to"
-    :id :outfile]])
+    :id :outfile]
+   ["-v" "--dotfile-dir"
+    :required "Directory to write graphviz data to"
+    :default "."
+    :id :dotfile-dir]
+   ])
+
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Runs model and writes results according to arguments passed via command line."
   [& args]
   (let [parsed-args (parse-opts args cli-opts)
         graph-type (get-in parsed-args [:options :graph-type])
         n-nodes (get-in parsed-args [:options :n-nodes])
         degree (get-in parsed-args [:options :degree])
-        gen-fn (symbol (str "gen-" graph-type))
-        in-graph (if (= graph-type "newman-watts")
-                   (gen-newman-watts (g/graph) n-nodes degree phi))
+
+        ;; construct graph
+        in-graph (-> (if (= graph-type "newman-watts")
+                       (gen-newman-watts (g/graph) n-nodes degree (get-in parsed-args [:options :phi]))
+                       (gen-barabasi-albert (g/graph) n-nodes degree))
+                     (initialize-graph 0.1))
+
+        ;; run model
         n-samples (get-in parsed-args [:options :n-samples])
-        samples (doall (take n-samples (doquery diffusion-query [in-graph] :number-of-particles 100)))]
-    (println gen-fn)
-    )
-  )
+        samples (doall (take n-samples (doquery :smc diffusion-query [in-graph] :number-of-particles 100)))
+        ]
+    ;; write results
+    (if-let [dot-dir (get-in parsed-args [:options :dotfile-dir])]
+      (do
+        (io/dot in-graph (str dot-dir "/ch07-" graph-type "-before.dot"))
+        (io/dot (m/from-result (first samples) [:history :graph]) (str dot-dir "/ch07-" graph-type "-after.dot"))))
+
+    (if-let [outfile (get-in parsed-args [:options :outfile])]
+      (dio/write-seasons! samples #(m/from-result % [:history :n-green]) outfile))))

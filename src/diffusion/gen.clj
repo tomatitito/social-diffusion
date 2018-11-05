@@ -1,5 +1,5 @@
 (ns diffusion.gen
-  (:require [g :as g]
+  (:require [loom.graph :as g]
             [loom.attr :as a]))
 
 
@@ -78,12 +78,12 @@
          ;; should be connected to a new node
          connect? (fn [g node]
                     (let [degree-node (count (g/successors g node))
-                          degree-sum (reduce #(+ %1 (count (g/successors g %2))) 0 (nodes g))]
+                          degree-sum (reduce #(+ %1 (count (g/successors g %2))) 0 (g/nodes g))]
                       (<= (/ degree-node degree-sum) (.nextDouble rnd))))
          ;; go through all nodes in g and decide whether
          ;; they connect to new
          new-edges (fn [g new]
-                     (for [n (nodes g)
+                     (for [n (g/nodes g)
                            :when (connect? g n)]
                        [new n]))
          ;; compute num-edges edges for new in graph g
