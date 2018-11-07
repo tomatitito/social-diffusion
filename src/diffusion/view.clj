@@ -80,3 +80,11 @@
      :encoding {:x {:field :week :type "ordinal"}
                 :y {:field :data :type "quantitative"}}
      }))
+
+(defn colorize
+  "Adds labels for coloring when plotting with graphviz."
+  [g]
+  (for [n (g/nodes g)]
+    (if (zero? (a/attr g n :green?))
+      (a/add-attr g n "color" "black")
+      (a/add-attr g n "color" "yellow"))))
