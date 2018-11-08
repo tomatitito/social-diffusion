@@ -55,9 +55,7 @@
         in-graph (-> (if (= graph-type "newman-watts")
                        (gen-newman-watts (g/graph) n-nodes degree (get-in parsed-args [:options :phi]))
                        (gen-barabasi-albert (g/graph) n-nodes degree))
-                     (initialize-graph 0.1)
-                     ;(colorize)
-                     )
+                     (initialize-graph 0.1))
 
         ;; run model
         n-samples (get-in parsed-args [:options :n-samples])
