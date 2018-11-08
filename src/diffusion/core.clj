@@ -65,7 +65,7 @@
         ]
     ;; write results
     (if-let [dotfile (get-in parsed-args [:options :dotfile])]
-      (io/dot in-graph (str dotfile ".dot")))
+      (io/dot in-graph dotfile))
 
     (if-let [outfile (get-in parsed-args [:options :outfile])]
       (dio/write-seasons! samples #(m/from-result % [:history :n-green]) outfile))
