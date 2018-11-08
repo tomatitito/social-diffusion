@@ -12,15 +12,6 @@
             [clojure.data.csv :as csv])
   (:gen-class))
 
-(defn list-degrees [g]
-  "Returns a vector where each element corresponds to the degree of a node in g."
-  (reduce #(conj %1 (count (g/successors g %2))) [] (g/nodes g)))
-
-(defn write-degrees-csv!
-  [datavec outfile]
-  (let [out (map vector datavec)]
-    (with-open [writer (clojure.java.io/writer outfile)]
-      (csv/write-csv writer out))))
 
 (def cli-opts
   [["-g" "--graph-type graph-type" "Type of graph used in simulation"
