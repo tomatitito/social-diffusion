@@ -7,8 +7,20 @@
             [diffusion.model :refer [diffusion-query initialize-graph]]
             [diffusion.io :as dio]
             [diffusion.gen :refer :all]
-            [clojure.tools.cli :refer [parse-opts]])
+            [diffusion.view :refer [colorize]]
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.data.csv :as csv])
   (:gen-class))
+
+(defn list-degrees [g]
+  "Returns a vector where each element corresponds to the degree of a node in g."
+  (reduce #(conj %1 (count (g/successors g %2))) [] (g/nodes g)))
+
+(defn write-degrees-csv!
+  [datavec outfile]
+  (let [out (map vector datavec)]
+    (with-open [writer (clojure.java.io/writer outfile)]
+      (csv/write-csv writer out))))
 
 (def cli-opts
   [["-g" "--graph-type graph-type" "Type of graph used in simulation"
@@ -31,10 +43,9 @@
    ["-o" "--outfile"
     :required "Path to write results to"
     :id :outfile]
-   ["-v" "--dotfile-dir"
-    :required "Directory to write graphviz data to"
-    :default "."
-    :id :dotfile-dir]
+   ["-v" "--dotfile"
+    :required "Path to write dotfile to"
+    :id :dotfile]
    ])
 
 
@@ -50,17 +61,17 @@
         in-graph (-> (if (= graph-type "newman-watts")
                        (gen-newman-watts (g/graph) n-nodes degree (get-in parsed-args [:options :phi]))
                        (gen-barabasi-albert (g/graph) n-nodes degree))
-                     (initialize-graph 0.1))
+                     (initialize-graph 0.1)
+                     ;(colorize)
+                     )
 
         ;; run model
         n-samples (get-in parsed-args [:options :n-samples])
         samples (doall (take n-samples (doquery :smc diffusion-query [in-graph] :number-of-particles 100)))
         ]
     ;; write results
-    (if-let [dot-dir (get-in parsed-args [:options :dotfile-dir])]
-      (do
-        (io/dot in-graph (str dot-dir "/ch07-" graph-type "-before.dot"))
-        (io/dot (m/from-result (first samples) [:history :graph]) (str dot-dir "/ch07-" graph-type "-after.dot"))))
+    (if-let [dotfile (get-in parsed-args [:options :dotfile])]
+      (io/dot in-graph (str dotfile ".dot")))
 
     (if-let [outfile (get-in parsed-args [:options :outfile])]
       (dio/write-seasons! samples #(m/from-result % [:history :n-green]) outfile))))

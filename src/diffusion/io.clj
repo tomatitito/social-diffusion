@@ -58,15 +58,6 @@
         (csv/write-csv writer header))
       (csv/write-csv writer (csv-data samples)))))
 
-(defn list-degrees [g]
-  "Returns a vector where each element corresponds to the degree of a node in g."
-  (reduce #(conj %1 (count (successors g %2))) [] (nodes g)))
-
-(defn write-degrees-csv!
-  [datavec outfile]
-  (let [out (map vector datavec)]
-    (with-open [writer (clojure.java.io/writer outfile)]
-      (csv/write-csv writer out))))
 ;(m/from-result (first samples) [:history :n-green])
 ;(data-for-single-season (first samples) #(m/from-result % [:history :n-green] ) 0)
 ;(def seasons (m/from-results samples [:history :n-green]))
