@@ -4,7 +4,7 @@
             [oz.core :as oz]
             [ministrants.core :as m]
             [anglican.core :refer [doquery]]
-            [diffusion.model :refer [diffusion-query initialize-graph]]
+            [diffusion.model :refer [diffusion-query initialize-graph list-degrees]]
             [diffusion.io :as dio]
             [diffusion.gen :refer :all]
             [diffusion.view :refer [colorize]]
@@ -37,6 +37,9 @@
    ["-v" "--dotfile"
     :required "Path to write dotfile to"
     :id :dotfile]
+   ["-e" "--degreefile"
+    :required "Path to write degrees to"
+    :id :degreefile]
    ])
 
 
@@ -65,4 +68,11 @@
       (io/dot in-graph (str dotfile ".dot")))
 
     (if-let [outfile (get-in parsed-args [:options :outfile])]
-      (dio/write-seasons! samples #(m/from-result % [:history :n-green]) outfile))))
+      (dio/write-seasons! samples #(m/from-result % [:history :n-green]) outfile))
+
+    (if-let [degreefile (get-in parsed-args [:options :degreefile])]
+      (dio/write-degrees-csv!
+        (-> (first samples)
+            (m/from-result [:history :graph])
+            (list-degrees))
+        degreefile))))
