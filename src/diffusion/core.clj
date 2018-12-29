@@ -7,7 +7,6 @@
             [diffusion.model :refer [diffusion-query initialize-graph list-degrees]]
             [diffusion.io :as dio]
             [diffusion.gen :refer :all]
-            [diffusion.view :refer [colorize]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.data.csv :as csv])
   (:gen-class))

@@ -44,7 +44,7 @@
   [adj-lst]
   (-> adj-lst
       (g/graph)
-      (a/add-attr-to-all :green? 0)
+      (a/add-attr-to-all :fake? 0)
       (a/add-attr-to-all :time-without 0)))
 
 
