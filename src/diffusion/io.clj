@@ -65,13 +65,3 @@
   (let [out (map vector datavec)]
     (with-open [writer (clojure.java.io/writer outfile)]
       (csv/write-csv writer out))))
-;(m/from-result (first samples) [:history :n-green])
-;(data-for-single-season (first samples) #(m/from-result % [:history :n-green] ) 0)
-;(def seasons (m/from-results samples [:history :n-green]))
-;(def time-without
-;  (-> samples
-;      (m/from-results [:history :graph])
-;      (times-in-gs)
-;      (flatten)
-;      ))
-
