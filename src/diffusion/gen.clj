@@ -78,7 +78,8 @@
          ;; should be connected to a new node
          connect? (fn [g node]
                     (let [degree-node (count (g/successors g node))
-                          degree-sum (reduce #(+ %1 (count (g/successors g %2))) 0 (g/nodes g))]
+                          degree-sum (reduce #(+ %1 (count (g/successors g %2)))
+                                             0 (g/nodes g))]
                       (<= (/ degree-node degree-sum) (.nextDouble rnd))))
          ;; go through all nodes in g and decide whether
          ;; they connect to new
