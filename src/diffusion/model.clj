@@ -111,7 +111,8 @@
 
 
 (with-primitive-procedures
-  [count-fake-news count-attr-for-neighbours count-attr-in-graph collect-attr-in-graph]
+  [count-fake-news count-attr-for-neighbours count-attr-in-graph
+   collect-attr-in-graph]
   (defquery
     diffusion-query [graph]
     (let
