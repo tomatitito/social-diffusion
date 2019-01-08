@@ -3,7 +3,8 @@
             [clojure.java.io :as jio]
             [clojure.data.csv :as csv]))
 
-(defmulti #^{:private true} data-for-single-season (fn [query-result f sim-id] (sequential? f)))
+(defmulti #^{:private true} data-for-single-season
+          (fn [query-result f sim-id] (sequential? f)))
 
 (defmethod data-for-single-season false [query-result f sim-id]
   (let
