@@ -13,9 +13,9 @@
      n-adopters (int (* proportion n-nodes))
      adopters (repeatedly n-adopters #(rand-nth (range n-nodes)))]
     (-> g
-        (a/add-attr-to-all :green? 0)
+        (a/add-attr-to-all :fake? 0)
         (a/add-attr-to-all :time-without 0)
-        (a/add-attr-to-nodes :green? 1 adopters))))
+        (a/add-attr-to-nodes :fake? 1 adopters))))
 
 
 (defn count-attr-for-neighbours
@@ -34,15 +34,15 @@
   (reduce #(+ %1 (a/attr g %2 attr)) 0 (g/nodes g)))
 
 
-(defn count-green-neighbours
+(defn count-fake-news
   [g node]
-  (count-attr-for-neighbours g node :green?))
+  (count-attr-for-neighbours g node :fake?))
 
 
 (defdist decision-dist
   [g node]
   [n-neighbours (count (g/successors g node))
-   n-green (count-green-neighbours g node)
+   n-green (count-fake-news g node)
    ratio (/ n-green n-neighbours)]
   (sample* [this]
     (if (zero? ratio)
@@ -64,13 +64,13 @@
 
 
 (with-primitive-procedures
-  [count-green-neighbours g/successors a/attr a/add-attr decision-dist]
+  [count-fake-news g/successors a/attr a/add-attr decision-dist]
   (defm look-around
     "Decision function for the diffusion model. Every node in the graph looks
     at his neighbours and counts how many of them are already green. This number
     is used as a parameter for a probabilistic decision to buy a green car."
     [g node]
-    (if (pos? (attr g node :green?))
+    (if (pos? (attr g node :fake?))
       g
       (let
         [time (attr g node :time-without)
@@ -84,7 +84,7 @@
          ]
 
         (if (pos? green?)
-          (add-attr g node :green? 1)
+          (add-attr g node :fake? 1)
           (add-attr g node :time-without (inc time)))))))
 
 
@@ -107,11 +107,12 @@
 
         (recur (inc t)
                (diffusion-step graph)
-               (conj n-green (count-attr-in-graph graph :green?)))))))
+               (conj n-green (count-attr-in-graph graph :fake?)))))))
 
 
 (with-primitive-procedures
-  [count-green-neighbours count-attr-for-neighbours count-attr-in-graph collect-attr-in-graph]
+  [count-fake-news count-attr-for-neighbours count-attr-in-graph
+   collect-attr-in-graph]
   (defquery
     diffusion-query [graph]
     (let
@@ -119,3 +120,8 @@
        history (run-sim t graph)
        ]
       {:history history})))
+
+
+(defn list-degrees [g]
+  "Returns a vector where each element corresponds to the degree of a node in g."
+  (reduce #(conj %1 (count (g/successors g %2))) [] (g/nodes g)))

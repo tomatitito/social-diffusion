@@ -35,9 +35,9 @@
 
 
 (defn vec->vega-time-series
-  "Converts a vector of values. Returns a vector of maps, which have two key-value pairs,
-  one for :week and one for :data (cases). This format can be supplied as a values vector
-  for vega-lite."
+  "Converts a vector of values. Returns a vector of maps, which have two
+  key-value pairs, one for :week and one for :data (cases). This format can be
+  supplied as a values vector for vega-lite."
   [vec]
   (letfn [(vec->series
             [v]
@@ -63,7 +63,8 @@
 
 
 (defn week-histo-spec
-  "Returns a spec for vega-lite to plot a histogram of new infections for a specified week."
+  "Returns a spec for vega-lite to plot a histogram of new infections for a
+  specified week."
   [samples week]
   {:data     {:values (from-maps (filter-by-step samples week) [:data])}
    :mark     "bar"
